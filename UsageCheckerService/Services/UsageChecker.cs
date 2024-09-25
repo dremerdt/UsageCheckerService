@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using UsageCheckerService.Models;
 
 namespace UsageCheckerService.Services;
 
@@ -58,6 +59,21 @@ public class UsageChecker(ILogger<Worker> logger) : IDisposable
     /// </summary>
     /// <returns></returns>
     public float GetPageUsage() => GetUsage(_pageCounter);
+    
+    public ProcessInfo[] GetTop5Processes()
+    {
+        var processes = Process.GetProcesses()
+            .OrderByDescending(p => p.WorkingSet64)
+            .Take(5)
+            .Select(p => new ProcessInfo
+            {
+                Name = p.ProcessName,
+                UsedProcessorPercent = p.TotalProcessorTime.Milliseconds,
+                UsedMemory = p.WorkingSet64 / 1024 / 1024
+            })
+            .ToArray();
+        return processes;
+    }
 
     public void Dispose()
     {

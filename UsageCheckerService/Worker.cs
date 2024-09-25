@@ -31,6 +31,9 @@ public class Worker(
                 
                 if (emailService.IsEmailEnabled)
                 {
+                    var top5 = usageChecker.GetTop5Processes();
+                    body += "<br/><br/><b>Top 5 processes:</b><br/>";
+                    body = top5.Aggregate(body, (current, process) => current + (process + "<br/>"));
                     var response = emailService.SendEmail(body);
                     if (response is not { IsSuccessful: true })
                     {
