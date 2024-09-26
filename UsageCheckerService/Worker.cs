@@ -14,7 +14,7 @@ public class Worker(
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (await _periodicTimer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested)
+        //while (await _periodicTimer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested)
         {
             var cpuUsage = usageChecker.GetCpuUsage();
             var ramUsage = usageChecker.GetMemoryUsage();
@@ -25,7 +25,7 @@ public class Worker(
                 logger.LogInformation(body);
             }
             
-            if (cpuUsage > options.Value.CpuThreshold || ramUsage > options.Value.RamThreshold)
+            if (true || cpuUsage > options.Value.CpuThreshold || ramUsage > options.Value.RamThreshold)
             {
                 logger.LogWarning("High load detected");
                 
