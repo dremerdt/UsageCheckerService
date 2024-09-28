@@ -68,8 +68,8 @@ public class UsageChecker(ILogger<Worker> logger) : IDisposable
             .Select(p => new ProcessInfo
             {
                 Name = p.ProcessName,
-                UsedProcessorPercent = double.Round(GetCpuUsageForProcess(p).Result, 2),
-                UsedMemory = p.WorkingSet64 / 1024 / 1024
+                UsedProcessor = double.Round(GetCpuUsageForProcess(p).Result, 2),
+                UsedMemory = float.Round(p.WorkingSet64 / 1024f / 1024f, 2)
             })
             .ToArray();
         return processes;
