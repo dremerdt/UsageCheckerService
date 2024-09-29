@@ -22,10 +22,18 @@ public class Worker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var checkTask = HandleCheckTimer(stoppingToken);
-        var reportTask = HandleReportTimer(stoppingToken);
+        try
+        {
+            var checkTask = HandleCheckTimer(stoppingToken);
+            var reportTask = HandleReportTimer(stoppingToken);
 
-        await Task.WhenAll(checkTask, reportTask);
+            await Task.WhenAll(checkTask, reportTask);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred");
+            throw;
+        }
     }
 
     private async Task HandleCheckTimer(CancellationToken stoppingToken)

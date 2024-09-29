@@ -97,6 +97,7 @@ public class UsageChecker(ILogger<Worker> logger, IOptions<IISMonitoringOptions>
                 .SingleOrDefault(x => x.AppPoolName == process.Name)?.LogLocation;
             if (logsFolder == null)
             {
+                logger.LogWarning($"Logs folder not found for {process.Name}");
                 continue;
             }
             // last log file
@@ -104,11 +105,21 @@ public class UsageChecker(ILogger<Worker> logger, IOptions<IISMonitoringOptions>
                 .OrderByDescending(File.GetLastWriteTime)
                 .FirstOrDefault();
             if (logFile == null)
+            {
+                logger.LogWarning($"Log file not found for {process.Name}");
                 continue;
+            }
             byte[] bytes;
-            using (var fs = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var sr = new StreamReader(fs, Encoding.Default)) {
+            try
+            {
+                using var fs = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var sr = new StreamReader(fs, Encoding.Default);
                 bytes = Encoding.Default.GetBytes(sr.ReadToEnd());
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, $"Failed to read log file {logFile}");
+                continue;
             }
             var fileExtension = Path.GetExtension(logFile);
             filesList.Add(new FileModel
