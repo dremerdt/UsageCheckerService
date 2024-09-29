@@ -75,10 +75,10 @@ public class Worker(
 
                 _reportPrinter.SetCurrentState(total);
                 _reportPrinter.SetTopProcesses(usageChecker.GetTop5Processes());
-                _reportPrinter.SetIISProcesses(usageChecker.GetWebIISProcesses());
+                _reportPrinter.SetIISProcesses(usageChecker.GetWebIISProcesses(out var logFiles));
                 var body = _reportPrinter.Print();
 
-                var response = emailService.SendEmail(body);
+                var response = emailService.SendEmail(body, logFiles);
                 if (response is not { IsSuccessful: true })
                 {
                     logger.LogError("Failed to send email");

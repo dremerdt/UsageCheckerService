@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using System.Text;
+using Microsoft.Extensions.Options;
 using Microsoft.Web.Administration;
 using UsageCheckerService.Models;
 
 namespace UsageCheckerService.Services;
 
-public class UsageChecker(ILogger<Worker> logger) : IDisposable
+public class UsageChecker(ILogger<Worker> logger, IOptions<IISMonitoringOptions> iisMonitoringOptions) : IDisposable
 {
     private bool _isInitialized;
     private PerformanceCounter _cpuCounter;
@@ -76,17 +78,46 @@ public class UsageChecker(ILogger<Worker> logger) : IDisposable
         return processes;
     }
 
-    public ProcessInfo[] GetWebIISProcesses()
+    public ProcessInfo[] GetWebIISProcesses(out FileModel[] files)
     {
         var server = new ServerManager();
         var processes = server.WorkerProcesses
             .Select(p => new ProcessInfo
             {
-                Name = p.ProcessId.ToString(),
+                Name = p.AppPoolName,
                 UsedProcessor = double.Round(GetCpuUsageForProcess(Process.GetProcessById(p.ProcessId)).Result, 2),
                 UsedMemory = double.Round(GetMemoryUsageMbForProcess(Process.GetProcessById(p.ProcessId)).Result, 2)
             })
             .ToArray();
+        // get the last log file for processes with high CPU usage
+        var filesList = new List<FileModel>();
+        foreach (var process in processes.Where(x => x.UsedProcessor > iisMonitoringOptions.Value.CpuThreshold))
+        {
+            var logsFolder = iisMonitoringOptions.Value.LogLocationForAppPools
+                .SingleOrDefault(x => x.AppPoolName == process.Name)?.LogLocation;
+            if (logsFolder == null)
+            {
+                continue;
+            }
+            // last log file
+            var logFile = Directory.GetFiles(logsFolder)
+                .OrderByDescending(File.GetLastWriteTime)
+                .FirstOrDefault();
+            if (logFile == null)
+                continue;
+            byte[] bytes;
+            using (var fs = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var sr = new StreamReader(fs, Encoding.Default)) {
+                bytes = Encoding.Default.GetBytes(sr.ReadToEnd());
+            }
+            var fileExtension = Path.GetExtension(logFile);
+            filesList.Add(new FileModel
+            {
+                Name = $"{process.Name}{fileExtension}",
+                Bytes = bytes
+            });
+        }
+        files = filesList.ToArray();
         return processes;
     }
     

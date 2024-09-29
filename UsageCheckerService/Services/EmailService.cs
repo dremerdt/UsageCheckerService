@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using RestSharp;
 using RestSharp.Authenticators;
+using UsageCheckerService.Models;
 
 namespace UsageCheckerService.Services;
 
@@ -10,7 +11,7 @@ public class EmailService(IOptions<EmailSettingsOptions> options)
     
     public bool IsEmailEnabled => options.Value.NotificationEnabled;
 
-    public RestResponse SendEmail(string body)
+    public RestResponse SendEmail(string body, FileModel[] files = null)
     {
         var settings = options.Value;
         if (!IsEmailEnabled || settings.EmailsParsed.Length == 0)
@@ -36,6 +37,15 @@ public class EmailService(IOptions<EmailSettingsOptions> options)
         request.AddParameter("subject", settings.Subject);
         request.AddParameter("html", body);
         request.Method = Method.Post;
+        
+        if (files != null)
+        {
+            foreach (var file in files)
+            {
+                request.AddFile("attachment", file.Bytes, file.Name);
+            }
+        }
+        
         return client.Execute(request);
     }
 

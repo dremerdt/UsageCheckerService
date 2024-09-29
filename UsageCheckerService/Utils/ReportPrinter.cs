@@ -28,7 +28,7 @@ public class ReportPrinter
         var sb = new StringBuilder();
         sb.Append(PrintCurrentState());
         sb.Append(PrintProcesses(_topProcesses, $"Top {_topProcesses.Length} processes"));
-        sb.Append(PrintProcesses(_iisProcesses, "IIS websites"));
+        sb.Append(PrintProcesses(_iisProcesses, "IIS info"));
         sb.Append(PrintStateHistory());
         return sb.ToString();
     }

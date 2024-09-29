@@ -9,6 +9,7 @@ builder.Services.AddWindowsService(options =>
 });
 builder.Services.AddOptions<EmailSettingsOptions>().Bind(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddOptions<UsageCheckerOptions>().Bind(builder.Configuration.GetSection("UsageChecker"));
+builder.Services.AddOptions<IISMonitoringOptions>().Bind(builder.Configuration.GetSection("IISMonitoring"));
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<UsageChecker>();
 
