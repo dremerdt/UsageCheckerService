@@ -8,6 +8,7 @@ public class ReportPrinter
 {
     private ProcessInfo _currentState;
     private ProcessInfo[] _topProcesses;
+    private ProcessInfo[] _iisProcesses;
     private ProcessInfo[] _stateHistory;
     
     public void SetCurrentState(ProcessInfo currentState) =>
@@ -16,6 +17,9 @@ public class ReportPrinter
     public void SetTopProcesses(ProcessInfo[] topProcesses) =>
         _topProcesses = topProcesses;
     
+    public void SetIISProcesses(ProcessInfo[] iisProcesses) =>
+        _iisProcesses = iisProcesses;
+    
     public void SetStateHistory(ProcessInfo[] stateHistory) =>
         _stateHistory = stateHistory;
     
@@ -23,7 +27,8 @@ public class ReportPrinter
     {
         var sb = new StringBuilder();
         sb.Append(PrintCurrentState());
-        sb.Append(PrintTopProcesses());
+        sb.Append(PrintProcesses(_topProcesses, $"Top {_topProcesses.Length} processes"));
+        sb.Append(PrintProcesses(_iisProcesses, "IIS websites"));
         sb.Append(PrintStateHistory());
         return sb.ToString();
     }
@@ -38,16 +43,16 @@ public class ReportPrinter
         return _currentState.ToString();
     }
     
-    private string PrintTopProcesses()
+    private string PrintProcesses(ProcessInfo[] processes, string title)
     {
-        if (_topProcesses == null)
+        if (processes == null)
         {
             return string.Empty;
         }
         
         var sb = new StringBuilder();
-        sb.Append($"<br/><br/><b>Top {_topProcesses.Length} processes:</b><br/>");
-        foreach (var process in _topProcesses)
+        sb.Append($"<br/><br/><b>{title}:</b><br/>");
+        foreach (var process in processes)
         {
             sb.AppendLine($" - {process.ToString()}<br/>");
         }
@@ -100,8 +105,8 @@ public class ReportPrinter
     {
         var sb = new StringBuilder();
         sb.Append("<br/><br/><b>RAM usage (%):</b><br/>");
-        var max = float.Round(_stateHistory.Max(x => x.UsedMemory), 2);
-        var min = float.Round(_stateHistory.Min(x => x.UsedMemory), 2);
+        var max = double.Round(_stateHistory.Max(x => x.UsedMemory), 2);
+        var min = double.Round(_stateHistory.Min(x => x.UsedMemory), 2);
         for (var i = 10 - 1; i >= 0; i--)
         {
             sb.Append($"{i * 10:00} |");

@@ -51,7 +51,7 @@ public class Worker(
         {
             var cpuUsage = usageChecker.GetCpuUsage();
             var ramUsage = usageChecker.GetMemoryUsage();
-            var total = new ProcessInfo("Total", cpuUsage, ramUsage)
+            var total = new ProcessInfo("Total", cpuUsage, ramUsage, DateTime.Now)
             {
                 UsedMemoryMeasure = "%"
             };
@@ -69,11 +69,13 @@ public class Worker(
                 
                 lock (_lock)
                 {
+                    _processesStack.Push(total);
                     _reportPrinter.SetStateHistory(_processesStack.GetProcesses());
                 }
 
                 _reportPrinter.SetCurrentState(total);
                 _reportPrinter.SetTopProcesses(usageChecker.GetTop5Processes());
+                _reportPrinter.SetIISProcesses(usageChecker.GetWebIISProcesses());
                 var body = _reportPrinter.Print();
 
                 var response = emailService.SendEmail(body);

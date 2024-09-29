@@ -7,7 +7,7 @@ public class ProcessInfo
     public string Name { get; set; }
     public double UsedProcessor { get; set; }
     public string UsedProcessorMeasure { get; set; } = "%";
-    public float UsedMemory { get; set; }
+    public double UsedMemory { get; set; }
     public string UsedMemoryMeasure { get; set; } = "MB";
     public DateTime? Date { get; set; }
 
@@ -38,7 +38,7 @@ public class ProcessInfo
         sb.Append($"CPU: {UsedProcessor}{UsedProcessorMeasure} RAM: {UsedMemory}{UsedMemoryMeasure}");
         if (Date != null)
         {
-            sb.Append($" Date: {Date:dd-MM-yyyy HH:mm:ss}");
+            sb.Append($", Date: {Date:dd-MM-yyyy HH:mm:ss}");
         }
         return sb.ToString();
     }

@@ -28,5 +28,5 @@ public class ProcessesStack(int size)
         }
     }
     
-    public ProcessInfo[] GetProcesses() => _processes.Where(x => x != null).ToArray();
+    public ProcessInfo[] GetProcesses() => _processes.Where(x => x != null).OrderBy(x => x.Date).ToArray();
 }

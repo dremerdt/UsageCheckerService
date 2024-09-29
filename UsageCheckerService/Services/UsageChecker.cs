@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Web.Administration;
 using UsageCheckerService.Models;
 
 namespace UsageCheckerService.Services;
@@ -74,6 +75,20 @@ public class UsageChecker(ILogger<Worker> logger) : IDisposable
             .ToArray();
         return processes;
     }
+
+    public ProcessInfo[] GetWebIISProcesses()
+    {
+        var server = new ServerManager();
+        var processes = server.WorkerProcesses
+            .Select(p => new ProcessInfo
+            {
+                Name = p.ProcessId.ToString(),
+                UsedProcessor = double.Round(GetCpuUsageForProcess(Process.GetProcessById(p.ProcessId)).Result, 2),
+                UsedMemory = double.Round(GetMemoryUsageMbForProcess(Process.GetProcessById(p.ProcessId)).Result, 2)
+            })
+            .ToArray();
+        return processes;
+    }
     
     private async Task<double> GetCpuUsageForProcess(Process process)
     {
@@ -87,6 +102,12 @@ public class UsageChecker(ILogger<Worker> logger) : IDisposable
         var totalMsPassed = (endTime - startTime).TotalMilliseconds;
         var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
         return cpuUsageTotal * 100;
+    }
+    
+    private async Task<double> GetMemoryUsageMbForProcess(Process process)
+    {
+        await Task.Delay(500);
+        return process.WorkingSet64 / 1024f / 1024f;
     }
 
     public void Dispose()
