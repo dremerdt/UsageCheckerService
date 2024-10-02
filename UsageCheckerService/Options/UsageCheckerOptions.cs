@@ -13,4 +13,8 @@ public class UsageCheckerOptions
     public int CpuThreshold { get; set; }
     public int RamThreshold { get; set; }
     public int PageThreshold { get; set; }
+    /// <summary>
+    /// How many times the threshold should be hit before the service takes action
+    /// </summary>
+    public int ThresholdHits { get; set; }
 }

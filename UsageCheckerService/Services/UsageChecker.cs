@@ -42,7 +42,7 @@ public class UsageChecker(ILogger<Worker> logger, IOptions<IISMonitoringOptions>
             Thread.Sleep(1000);
             i = counter.NextValue();
         }
-        return float.Round(i, 2);
+        return i;
     }
 
     /// <summary>
@@ -71,8 +71,8 @@ public class UsageChecker(ILogger<Worker> logger, IOptions<IISMonitoringOptions>
             .Select(p => new ProcessInfo
             {
                 Name = p.ProcessName,
-                UsedProcessor = double.Round(GetCpuUsageForProcess(p).Result, 2),
-                UsedMemory = float.Round(p.WorkingSet64 / 1024f / 1024f, 2)
+                UsedProcessor = GetCpuUsageForProcess(p).Result,
+                UsedMemory = p.WorkingSet64 / 1024d / 1024
             })
             .ToArray();
         return processes;
@@ -85,8 +85,8 @@ public class UsageChecker(ILogger<Worker> logger, IOptions<IISMonitoringOptions>
             .Select(p => new ProcessInfo
             {
                 Name = p.AppPoolName,
-                UsedProcessor = double.Round(GetCpuUsageForProcess(Process.GetProcessById(p.ProcessId)).Result, 2),
-                UsedMemory = double.Round(GetMemoryUsageMbForProcess(Process.GetProcessById(p.ProcessId)).Result, 2)
+                UsedProcessor = GetCpuUsageForProcess(Process.GetProcessById(p.ProcessId)).Result,
+                UsedMemory = GetMemoryUsageMbForProcess(Process.GetProcessById(p.ProcessId)).Result
             })
             .ToArray();
         // get the last log file for processes with high CPU usage

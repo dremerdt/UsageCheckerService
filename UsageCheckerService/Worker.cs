@@ -63,24 +63,27 @@ public class Worker(
             {
                 UsedMemoryMeasure = "%"
             };
+            
+            ProcessInfo[] history;
+            lock (_lock)
+            {
+                _processesStack.Push(total);
+                history = _processesStack.GetProcesses();
+            }
 
             if (logger.IsEnabled(LogLevel.Information))
             {
                 logger.LogInformation($"CPU: {cpuUsage}% RAM: {ramUsage}%");
             }
 
-            if (cpuUsage > options.Value.CpuThreshold || ramUsage > options.Value.RamThreshold)
+            if (history.Count(x => x.UsedProcessor > options.Value.CpuThreshold) >= options.Value.ThresholdHits
+                || history.Count(x => x.UsedMemory > options.Value.RamThreshold) >= options.Value.ThresholdHits)
             {
                 logger.LogWarning("High load detected");
 
                 if (!emailService.IsEmailEnabled) continue;
                 
-                lock (_lock)
-                {
-                    _processesStack.Push(total);
-                    _reportPrinter.SetStateHistory(_processesStack.GetProcesses());
-                }
-
+                _reportPrinter.SetStateHistory(history);
                 _reportPrinter.SetCurrentState(total);
                 _reportPrinter.SetTopProcesses(usageChecker.GetTop5Processes());
                 _reportPrinter.SetIISProcesses(usageChecker.GetWebIISProcesses(out var logFiles));

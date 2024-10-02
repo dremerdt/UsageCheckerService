@@ -17,8 +17,8 @@ public class ProcessInfo
     }
     public ProcessInfo(double usedProcessorPercent, float usedMemory, DateTime? date = null)
     {
-        UsedProcessor = double.Round(usedProcessorPercent, 2);
-        UsedMemory = float.Round(usedMemory, 2);
+        UsedProcessor = usedProcessorPercent;
+        UsedMemory = usedMemory;
         Date = date;
     }
 
@@ -35,7 +35,7 @@ public class ProcessInfo
         {
             sb.Append($"<b>{Name}</b> ");
         }
-        sb.Append($"CPU: {UsedProcessor}{UsedProcessorMeasure} RAM: {UsedMemory}{UsedMemoryMeasure}");
+        sb.Append($"CPU: {UsedProcessor:F2}{UsedProcessorMeasure} RAM: {UsedMemory:F2}{UsedMemoryMeasure}");
         if (Date != null)
         {
             sb.Append($", Date: {Date:dd-MM-yyyy HH:mm:ss}");

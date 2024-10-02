@@ -77,8 +77,8 @@ public class ReportPrinter
     {
         var sb = new StringBuilder();
         sb.Append("<br/><br/><b>CPU usage (%):</b><br/>");
-        var max = double.Round(_stateHistory.Max(x => x.UsedProcessor), 2);
-        var min = double.Round(_stateHistory.Min(x => x.UsedProcessor), 2);
+        var max = _stateHistory.Max(x => x.UsedProcessor);
+        var min = _stateHistory.Min(x => x.UsedProcessor);
         for (var i = 10 - 1; i >= 0; i--)
         {
             sb.Append($"{i * 10:00} |");
@@ -105,8 +105,8 @@ public class ReportPrinter
     {
         var sb = new StringBuilder();
         sb.Append("<br/><br/><b>RAM usage (%):</b><br/>");
-        var max = double.Round(_stateHistory.Max(x => x.UsedMemory), 2);
-        var min = double.Round(_stateHistory.Min(x => x.UsedMemory), 2);
+        var max = _stateHistory.Max(x => x.UsedMemory);
+        var min = _stateHistory.Min(x => x.UsedMemory);
         for (var i = 10 - 1; i >= 0; i--)
         {
             sb.Append($"{i * 10:00} |");
