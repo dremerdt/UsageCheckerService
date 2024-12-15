@@ -2,13 +2,12 @@ using Microsoft.Extensions.Options;
 using RestSharp;
 using RestSharp.Authenticators;
 using UsageCheckerService.Models;
+using UsageCheckerService.Options;
 
 namespace UsageCheckerService.Services;
 
 public class EmailService(IOptions<EmailSettingsOptions> options)
 {
-    private const string BaseUri = "https://api.eu.mailgun.net/v3";
-    
     public bool IsEmailEnabled => options.Value.NotificationEnabled;
 
     public RestResponse SendEmail(string body, FileModel[] files = null)
@@ -20,7 +19,7 @@ public class EmailService(IOptions<EmailSettingsOptions> options)
         }
         var client = new RestClient(new RestClientOptions
         {
-            BaseUrl = new Uri(BaseUri),
+            BaseUrl = new Uri(settings.BaseUri),
             Authenticator = new HttpBasicAuthenticator("api", settings.MainGunApiKey)
         });
 

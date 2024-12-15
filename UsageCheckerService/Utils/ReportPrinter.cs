@@ -1,5 +1,4 @@
 using System.Text;
-using Microsoft.Extensions.Primitives;
 using UsageCheckerService.Models;
 
 namespace UsageCheckerService.Utils;
@@ -43,16 +42,18 @@ public class ReportPrinter
         return _currentState.ToString();
     }
     
-    private string PrintProcesses(ProcessInfo[] processes, string title)
+    private static string PrintProcesses(ProcessInfo[] processes, string title)
     {
-        if (processes == null)
+        if (processes == null || processes.Length == 0)
         {
             return string.Empty;
         }
         
         var sb = new StringBuilder();
         sb.Append($"<br/><br/><b>{title}:</b><br/>");
-        foreach (var process in processes)
+        foreach (var process in processes
+                     .OrderByDescending(x => x.UsedProcessor)
+                     .ThenByDescending(x => x.UsedMemory))
         {
             sb.AppendLine($" - {process.ToString()}<br/>");
         }
@@ -67,62 +68,36 @@ public class ReportPrinter
         }
         
         var sb = new StringBuilder();
-        sb.Append(PrintCpuGraph());
-        sb.Append(PrintRamGraph());
+        sb.Append(PrintGraph("CPU usage (%)", _stateHistory.Select(x => x.UsedProcessor).ToArray()));
+        sb.Append(PrintGraph("RAM usage (%)", _stateHistory.Select(x => x.UsedMemory).ToArray()));
         
         return sb.ToString();
     }
     
-    private string PrintCpuGraph()
+    private static string PrintGraph(string title, double[] values)
     {
         var sb = new StringBuilder();
-        sb.Append("<br/><br/><b>CPU usage (%):</b><br/>");
-        var max = _stateHistory.Max(x => x.UsedProcessor);
-        var min = _stateHistory.Min(x => x.UsedProcessor);
+        sb.Append($"<br/><br/><b>{title}:</b><br/>");
+        var max = values.Max(x => x);
+        var min = values.Min(x => x);
         for (var i = 10 - 1; i >= 0; i--)
         {
             sb.Append($"{i * 10:00} |");
-            foreach (var info in _stateHistory)
+            foreach (var v in values)
             {
-                var p = info.UsedProcessor / 10;
-                sb.Append(p >= i ? " X |" : " _ |");
+                var p = v / 10;
+                sb.Append(p >= i ? " ■ |" : " □ |");
             }
             sb.Append("<br/>");
         }
 
-        for (var i = 0; i < _stateHistory.Length + 2; i++)
+        for (var i = 0; i < values.Length + 2; i++)
         {
             sb.Append("----");
         }
         
         sb.Append("<br/>");
-        sb.Append($"Used - Min: {min}%, Max: {max}%");
-        
-        return sb.ToString();
-    }
-    
-    private string PrintRamGraph()
-    {
-        var sb = new StringBuilder();
-        sb.Append("<br/><br/><b>RAM usage (%):</b><br/>");
-        var max = _stateHistory.Max(x => x.UsedMemory);
-        var min = _stateHistory.Min(x => x.UsedMemory);
-        for (var i = 10 - 1; i >= 0; i--)
-        {
-            sb.Append($"{i * 10:00} |");
-            foreach (var info in _stateHistory)
-            {
-                var p = info.UsedMemory / 10;
-                sb.Append(p >= i ? " X |" : " _ |");
-            }
-            sb.Append("<br/>");
-        }
-        for (var i = 0; i < _stateHistory.Length + 2; i++)
-        {
-            sb.Append("----");
-        }
-        sb.Append("<br/>");
-        sb.Append($"Used - Min: {min}%, Max: {max}%");
+        sb.Append($"Used - Min: {min:F2}%, Max: {max:F2}%");
         
         return sb.ToString();
     }

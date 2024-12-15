@@ -17,4 +17,5 @@ public class UsageCheckerOptions
     /// How many times the threshold should be hit before the service takes action
     /// </summary>
     public int ThresholdHits { get; set; }
+    public bool IsEnabled { get; set; }
 }
